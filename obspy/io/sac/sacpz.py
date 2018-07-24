@@ -47,7 +47,13 @@ def _write_sacpz(inventory, file_or_file_object):
             for cha in sta:
                 resp = cha.response
                 sens = resp.instrument_sensitivity
-                paz = resp.get_paz()
+                try:
+                    paz = resp.get_paz()
+                except:
+                    print("{}.{}.{} has no paz. Skipping.".format(net.code,
+                                                                  sta.code,
+                                                                  cha.code))
+                    continue
                 input_unit = sens.input_units.upper()
                 if input_unit == "M":
                     pass
@@ -56,8 +62,10 @@ def _write_sacpz(inventory, file_or_file_object):
                 elif input_unit in ["M/S**2", "M/SEC**2"]:
                     paz.zeros.extend([0j, 0j])
                 else:
-                    msg = "Encountered unrecognized input units in response: "
-                    raise NotImplementedError(msg + str(input_unit))
+                    print("{}.{}.{} ".format(net.code, sta.code, cha.code) +\
+                          "has unrecognized input units in " +\
+                          "response: {}. Skipping".format(input_unit))
+                    continue
                 out.append("* " + "*" * 50)
                 out.append("* NETWORK     : %s" % net.code)
                 out.append("* STATION     : %s" % sta.code)
