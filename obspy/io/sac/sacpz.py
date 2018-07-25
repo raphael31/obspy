@@ -62,9 +62,10 @@ def _write_sacpz(inventory, file_or_file_object):
                 elif input_unit in ["M/S**2", "M/SEC**2"]:
                     paz.zeros.extend([0j, 0j])
                 else:
-                    print("{}.{}.{} ".format(net.code, sta.code, cha.code) +\
-                          "has unrecognized input units in " +\
-                          "response: {}. Skipping".format(input_unit))
+                    msg = "{}.{}.{} ".format(net.code, sta.code, cha.code)
+                    msg += "has unrecognized input units in "
+                    msg += "response: {}. Skipping".format(input_unit)
+                    print(msg)
                     continue
                 out.append("* " + "*" * 50)
                 out.append("* NETWORK     : %s" % net.code)
