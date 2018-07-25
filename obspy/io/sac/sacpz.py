@@ -49,7 +49,7 @@ def _write_sacpz(inventory, file_or_file_object):
                 sens = resp.instrument_sensitivity
                 try:
                     paz = resp.get_paz()
-                except:
+                except Exception:
                     print("{}.{}.{} has no paz. Skipping.".format(net.code,
                                                                   sta.code,
                                                                   cha.code))
