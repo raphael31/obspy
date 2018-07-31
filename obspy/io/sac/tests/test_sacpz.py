@@ -64,7 +64,7 @@ class SACPZTestCase(unittest.TestCase):
         self.assertEqual(got, expected)
 
     def test_write_sacpz_soh(self):
-        path = os.path.join(self.path, '../..', 'stationxml', 'tests',
+        path = os.path.join(self.path, '..', '..', 'stationxml', 'tests',
                             'data', 'only_soh.xml')
         inv = read_inventory(path)
         f = io.StringIO()
