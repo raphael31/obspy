@@ -16,6 +16,7 @@ from future.builtins import *  # NOQA
 from future.utils import native_str
 
 import numpy as np
+import warnings
 
 from obspy import UTCDateTime
 from obspy.core import AttribDict
@@ -50,9 +51,13 @@ def _write_sacpz(inventory, file_or_file_object):
                 try:
                     paz = resp.get_paz()
                 except Exception:
-                    print("{}.{}.{} has no paz. Skipping.".format(net.code,
-                                                                  sta.code,
-                                                                  cha.code))
+                    msg = "{}.{}.{}.{} {} has no paz. Skipping.".format(
+                        net.code,
+                        sta.code,
+                        cha.location_code,
+                        cha.code,
+                        cha.start_date)
+                    warnings.warn(msg)
                     continue
                 input_unit = sens.input_units.upper()
                 if input_unit == "M":
@@ -62,10 +67,15 @@ def _write_sacpz(inventory, file_or_file_object):
                 elif input_unit in ["M/S**2", "M/SEC**2"]:
                     paz.zeros.extend([0j, 0j])
                 else:
-                    msg = "{}.{}.{} ".format(net.code, sta.code, cha.code)
+                    msg = "{}.{}.{}.{} {} ".format(
+                        net.code,
+                        sta.code,
+                        cha.location_code,
+                        cha.code,
+                        cha.start_date)
                     msg += "has unrecognized input units in "
                     msg += "response: {}. Skipping".format(input_unit)
-                    print(msg)
+                    warnings.warn(msg)
                     continue
                 out.append("* " + "*" * 50)
                 out.append("* NETWORK     : %s" % net.code)

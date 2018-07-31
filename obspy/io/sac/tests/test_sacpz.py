@@ -63,6 +63,13 @@ class SACPZTestCase(unittest.TestCase):
         expected = [l for l in expected.split("\n") if "CREATED" not in l]
         self.assertEqual(got, expected)
 
+    def test_write_sacpz_soh(self):
+        path = os.path.join(self.path, '../..', 'stationxml', 'tests',
+                            'data', 'only_soh.xml')
+        inv = read_inventory(path)
+        f = io.StringIO()
+        self.assertWarns(Warning, inv.write, f, format='SACPZ')
+
     def test_attach_paz(self):
         fvelhz = io.StringIO("""ZEROS 3
         -5.032 0.0
