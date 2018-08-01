@@ -11,6 +11,7 @@ import unittest
 import io
 
 import numpy as np
+import warnings
 
 from obspy import read_inventory, Trace
 from obspy.core.util import NamedTemporaryFile
@@ -68,7 +69,9 @@ class SACPZTestCase(unittest.TestCase):
                             'data', 'only_soh.xml')
         inv = read_inventory(path)
         f = io.StringIO()
-        self.assertWarns(Warning, inv.write, f, format='SACPZ')
+        with warnings.catch_warnings(record=True) as w:
+            inv.write(f, format='SACPZ')
+            self.assertEqual(len(w), 2)
 
     def test_attach_paz(self):
         fvelhz = io.StringIO("""ZEROS 3
