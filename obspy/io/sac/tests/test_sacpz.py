@@ -69,9 +69,9 @@ class SACPZTestCase(unittest.TestCase):
                             'data', 'only_soh.xml')
         inv = read_inventory(path)
         f = io.StringIO()
-        with warnings.catch_warnings(record=True) as w:
-            inv.write(f, format='SACPZ')
-            self.assertEqual(len(w), 2)
+        inv.write(f, format='SACPZ')
+        # Only 2 newlines are written.
+        self.assertEqual(2, f.tell())
 
     def test_attach_paz(self):
         fvelhz = io.StringIO("""ZEROS 3
