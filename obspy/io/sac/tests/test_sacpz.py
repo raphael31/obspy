@@ -11,7 +11,6 @@ import unittest
 import io
 
 import numpy as np
-import warnings
 
 from obspy import read_inventory, Trace
 from obspy.core.util import NamedTemporaryFile
