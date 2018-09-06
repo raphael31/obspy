@@ -52,10 +52,7 @@ def _write_sacpz(inventory, file_or_file_object):
                     paz = resp.get_paz()
                 except Exception:
                     msg = "{}.{}.{}.{} {} has no paz. Skipping.".format(
-                        net.code,
-                        sta.code,
-                        cha.location_code,
-                        cha.code,
+                        net.code, sta.code, cha.location_code, cha.code,
                         cha.start_date)
                     warnings.warn(msg)
                     continue
@@ -67,12 +64,9 @@ def _write_sacpz(inventory, file_or_file_object):
                 elif input_unit in ["M/S**2", "M/SEC**2"]:
                     paz.zeros.extend([0j, 0j])
                 else:
-                    msg = "{}.{}.{}.{} {} ".format(
-                        net.code,
-                        sta.code,
-                        cha.location_code,
-                        cha.code,
-                        cha.start_date)
+                    msg = "{}.{}.{}.{} {} ".format(net.code, sta.code,
+                                                   cha.location_code, cha.code,
+                                                   cha.start_date)
                     msg += "has unrecognized input units in "
                     msg += "response: {}. Skipping".format(input_unit)
                     warnings.warn(msg)
