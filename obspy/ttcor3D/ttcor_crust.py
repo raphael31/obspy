@@ -220,10 +220,13 @@ def ttcor_complete(stat_lat,stat_lon,quake_lat,quake_lon,quake_depth,moho_pad,rh
   corrections (in s): the crustal and topography corrections in a array:
       [P wave correction for the source's end, S wave correction for the source's end,
       P wave correction for the receiver's end, S wave correction for the receiver's end]
+      Computed at vertical incidence if phases are not present
 
   new_times (in s): 3D travel times = 1D times + corrections
+    [P time, S time], return zero if phases are not present
 
   theoretical_times (in s): 1D travel times calculated with obspy using the input model
+    [P time, S time], return zero if phases are not present
 
   Parameters
   ------
@@ -276,9 +279,21 @@ def ttcor_complete(stat_lat,stat_lon,quake_lat,quake_lon,quake_depth,moho_pad,rh
   d=dist[0]*180.0/(topo.r0*np.pi)
   arrivals_P=model.get_travel_times(quake_depth ,d,["P","p"])
   arrivals_S=model.get_travel_times(quake_depth ,d,["S","s"])
-  arrival_p=arrivals_P[0]
-  arrival_s=arrivals_S[0]
-  times_theo[0,:]=[arrival_p.time,arrival_s.time]
+  if (len(arrivals_P) > 0):
+    arrival_p=arrivals_P[0]
+    arrival_p_time=arrival_p.time
+    p_ray_param=arrival_p.ray_param
+  else:
+    arrival_p_time=0.0
+    p_ray_param=0.0
+  if (len(arrivals_S) > 0):
+    arrival_s=arrivals_S[0]
+    arrival_s_time=arrival_s.time
+    s_ray_param=arrival_s.ray_param
+  else:
+    arrival_s_time=0.0
+    s_ray_param=0.0
+  times_theo[0,:]=[arrival_p_time,arrival_s_time]
 
 # Check consistency between seismic and geodetic model at 1 km level
   if (abs(geod_thickave-thickave)>1000.0):
@@ -296,8 +311,8 @@ def ttcor_complete(stat_lat,stat_lon,quake_lat,quake_lon,quake_depth,moho_pad,rh
   geoparam[0,0]=quake_lat
   geoparam[0,1]=quake_lon
   geoparam[0,2]=quake_depth
-  geoparam[0,5]=arrival_p.ray_param*np.pi/180
-  geoparam[0,6]=arrival_s.ray_param*np.pi/180
+  geoparam[0,5]=p_ray_param*np.pi/180
+  geoparam[0,6]=s_ray_param*np.pi/180
 
   topo_source_radius = topo.expand(lat=float(quake_lat), lon=float(quake_lon))/1e3
   topo_receiver_radius = topo.expand(lat=float(stat_lat), lon=float(stat_lon))/1e3
@@ -318,8 +333,16 @@ def ttcor_complete(stat_lat,stat_lon,quake_lat,quake_lon,quake_depth,moho_pad,rh
                                   topo_source_radius,topo.r0/1e3,rd)
   [ttcorP_crust3D_sour,ttcorS_crust3D_sour]=crust_topo_cor_sour(modcrustradsour,modcrustradref,geoparam[0,:],topo.r0/1e3)
   [ttcorP_crust3D_rec,ttcorS_crust3D_rec]=crust_topo_cor_rec(modcrustradrec,modcrustradref,geoparam[0,:],topo.r0/1e3)
-  outtimes[0,:]=[ttcorP_crust3D_sour ,ttcorS_crust3D_sour,ttcorP_crust3D_rec,ttcorS_crust3D_rec]
-  new_times[0,:]=[times_theo[0,0]+ttcorP_crust3D_sour+ttcorP_crust3D_rec,times_theo[0,1]+ttcorS_crust3D_sour+ttcorS_crust3D_rec]
+  outtimes[0,:]=[ttcorP_crust3D_sour,ttcorS_crust3D_sour,ttcorP_crust3D_rec,ttcorS_crust3D_rec]
+  if (times_theo[0,0]>0.0000001):
+    new_times[0,0]=times_theo[0,0]+ttcorP_crust3D_sour+ttcorP_crust3D_rec
+  else:
+    new_times[0,0]=0.0
+  if (times_theo[0,1]>0.0000001):
+    new_times[0,1]=times_theo[0,1]+ttcorS_crust3D_sour+ttcorS_crust3D_rec
+  else:
+    new_times[0,1]=0.0
+
   return [outtimes,new_times,times_theo]
 
 
@@ -358,6 +381,7 @@ def extract_modcrust(model_nd,rho_m) :
     f=open(model_nd,"r+",)
     lines = f.readlines()
     nclay=0
+#    print(len(lines))
     for i in range(len(lines)):
       if (lines[i]=='mantle\n'):
         thickave=np.fromstring(lines[i-1], dtype=float, sep=' ')[0]*1000
